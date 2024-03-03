@@ -1,0 +1,46 @@
+﻿@page "/posts"
+@inject SQLDbContext DB
+@attribute [StreamRendering(true)]
+<h3>List</h3>
+@if(posts != null)
+{
+    
+    <a href="posts/add">Add</a>
+<table class="table table-bordered">
+    <tr>
+        <th>Title</th>
+        <th>Desc</th>
+        <th>Action</th>
+    </tr>
+    @foreach (var post in posts)
+    {
+        <tr>
+            <td>@post.PostTitle</td>
+            <td>@post.PostDesc</td>
+            <td>
+                <a href="@($"posts/edit/{post.PostID}")">Edit</a> |
+                <a href="@($"posts/details/{post.PostID}")">Details</a> |
+                <a href="@($"posts/delete/{post.PostID}")">Delete</a>
+            </td>
+        </tr>
+    }
+    </table>
+}
+else
+{
+
+    <p><em>Loading...</em></p>
+}
+
+
+
+@code {
+    IEnumerable<Post> posts;
+    protected override async Task OnInitializedAsync()
+    {
+       // await Task.Delay(5000);
+        posts = await DB.Posts.ToListAsync();
+
+
+    }
+}

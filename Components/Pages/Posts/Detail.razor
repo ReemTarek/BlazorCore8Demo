@@ -1,0 +1,47 @@
+﻿@page "/posts/details/{id:int}"
+@inject SQLDbContext DB
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>Post</h4>
+    <hr />
+    @if (post is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <dl class="row">
+            <dt class="col-sm-2">Title</dt>
+            <dd class="col-sm-10">@post.PostTitle</dd>
+            <dt class="col-sm-2">Desc</dt>
+            <dd class="col-sm-10">@post.PostDesc</dd>
+           
+        </dl>
+        <div>
+            <a href="@($"/posts/edit/{post.PostID}")">Edit</a> |
+            <a href="@($"/posts")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    Post? post;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        post = await DB.Posts.FirstOrDefaultAsync(m => m.PostID == Id);
+
+        if (post is null)
+        {
+            // Need a way to trigger a 404 here
+            // https://github.com/dotnet/aspnetcore/issues/45654
+        }
+    }
+}

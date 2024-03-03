@@ -1,0 +1,86 @@
+﻿﻿
+@page "/posts/edit/{id:int}"
+@inject SQLDbContext DB
+@inject NavigationManager NavigationManager
+<h3>Edit</h3>
+
+<h4>Post</h4>
+<hr />
+@if (post is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="post" OnValidSubmit="UpdatePost" FormName="edit">
+
+                <input type="hidden" name="post.PostID" value="@post.PostID" />
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title:</label>
+                    <InputText id="title" @bind-Value="post.PostTitle" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label for="desc" class="form-label">desc:</label>
+                    <InputText id="desc" @bind-Value="post.PostDesc" class="form-control" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/posts">Back to List</a>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    public Post? post { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        post ??= await DB.Posts.FirstOrDefaultAsync(m => m.PostID == Id);
+
+        if (post is null)
+        {
+            // Need a way to trigger a 404 here
+            // https://github.com/dotnet/aspnetcore/issues/45654
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdatePost()
+    {
+        DB.Attach(post!).State = EntityState.Modified;
+      //  DB.Posts.Update(post);
+        try
+        {
+            await DB.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!PostExists(post!.PostID))
+            {
+                // Need a way to trigger a 404 here
+                // https://github.com/dotnet/aspnetcore/issues/45654
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/posts");
+    }
+
+    bool PostExists(int id)
+    {
+        return DB.Posts.Any(e => e.PostID == id);
+    }
+}
